@@ -762,10 +762,16 @@
       return arr.sort(()=>0.5-Math.random()).slice(0,n);
     }
 
-    function pickBonus() {
-      if (Math.random() < 1/12 && byRarity.SuperRare.length>0) return sampleFrom(byRarity.SuperRare,1)[0];
-      return pool[Math.floor(Math.random()*pool.length)];
-    }
+ function pickBonus() {
+  // 1 in 12 chance to get a Super Rare
+  if (Math.random() < 1/12 && byRarity.SuperRare.length > 0) {
+    return sampleFrom(byRarity.SuperRare, 1)[0];
+  }
+
+  // Otherwise pick from all cards EXCEPT Super Rares
+  const nonSuperPool = pool.filter(c => c.Rarity !== "Super Rare");
+  return nonSuperPool[Math.floor(Math.random() * nonSuperPool.length)];
+}
 
     function openPack() {
       const commons = sampleFrom(byRarity.Common,6);
