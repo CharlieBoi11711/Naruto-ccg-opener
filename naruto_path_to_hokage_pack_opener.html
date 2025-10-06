@@ -40,7 +40,7 @@
   <div class="wrap">
     <header>
       <h1>Path to Hokage — Mock Pack Opener</h1>
-      <div class="note">Drop your filled CSV/XLSX (columns: <code>Name</code>, <code>Rarity</code>, <code>Number</code>) to use your collection. If none uploaded, app uses a sample subset.</div>
+      <div class="note">Automatically loaded from embedded Path to Hokage dataset. You can still upload another file to override.</div>
     </header>
 
     <div class="controls">
@@ -55,9 +55,7 @@
         <div class="pack-view-controls">
           <div style="margin-top:12px;color:var(--muted)">Current pack contents</div>
           <div class="card-grid">
-            <div class="cards" id="currentCards">
-              <!-- cards will render here -->
-            </div>
+            <div class="cards" id="currentCards"></div>
           </div>
         </div>
 
@@ -65,7 +63,6 @@
           <strong>Last opened pack (#<span id="lastPackIndex">0</span>):</strong>
           <div id="lastPackDisplay" style="margin-top:8px"></div>
         </div>
-
       </div>
 
       <aside>
@@ -81,28 +78,646 @@
     </footer>
   </div>
 
-  <!-- SheetJS for reading user Excel/CSV (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script>
-    const samplePool = [
-      {Name:'Naruto Uzumaki',Rarity:'Common',Number:'001'},
-      {Name:'Sasuke Uchiha',Rarity:'Uncommon',Number:'002'},
-      {Name:'Sakura Haruno',Rarity:'Uncommon',Number:'003'},
-      {Name:'Kunai',Rarity:'Common',Number:'004'},
-      {Name:'Cross-Shaped Shuriken',Rarity:'Common',Number:'005'},
-      {Name:'Multi Shadow Clone Jutsu',Rarity:'Rare',Number:'006'},
-      {Name:'Sharingan Eye',Rarity:'Rare',Number:'007'},
-      {Name:'Byakugan',Rarity:'Rare',Number:'008'},
-      {Name:'One Morning',Rarity:'Rare',Number:'009'},
-      {Name:'Harem Jutsu',Rarity:'Uncommon',Number:'010'},
-      {Name:'Crystal Ice Mirror',Rarity:'Rare',Number:'011'},
-      {Name:'Leaf Headband',Rarity:'Common',Number:'012'},
-      {Name:'Kakashi Hatake',Rarity:'Uncommon',Number:'013'},
-      {Name:'Iruka Umino',Rarity:'Rare',Number:'014'},
-      {Name:'A Thousand Needles of Death',Rarity:'Uncommon',Number:'015'},
-    ];
-
-    let pool = samplePool.slice();
+    const embeddedCards = [
+  {
+    "Number": "PTHJ-001",
+    "Name": "Kunai",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-002",
+    "Name": "Cross-Shaped Shuriken",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-003",
+    "Name": "Sexy Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-004",
+    "Name": "Harem Jutsu",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHJ-005",
+    "Name": "Multi Shadow Clone Jutsu",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHJ-006",
+    "Name": "8 Trigram Divination Seal Spell Formula",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-007",
+    "Name": "Sharingan Eye",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHJ-008",
+    "Name": "Crystal Ball Jutsu",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHJ-009",
+    "Name": "A Thousand Years of Death",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-010",
+    "Name": "Fire Style: Fire Ball Jutsu",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHJ-011",
+    "Name": "Shared-instinct Assassination Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-012",
+    "Name": "Water Clone Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-013",
+    "Name": "Hidden Mist Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-014",
+    "Name": "Silent Killing Jutsu",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHJ-015",
+    "Name": "Clone Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-016",
+    "Name": "Transformation Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-017",
+    "Name": "Substitution Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-018",
+    "Name": "Disguise Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-019",
+    "Name": "Evil Illusion: Death Mirage Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-020",
+    "Name": "Escape Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-021",
+    "Name": "Earth Style: Headhunter Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-022",
+    "Name": "Mind Transfer Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-023",
+    "Name": "Shadow Possession Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-024",
+    "Name": "Expansion Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-025",
+    "Name": "Shadow Clone Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-026",
+    "Name": "Leaf Hurricane",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-027",
+    "Name": "Leaf Whirlwind",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-028",
+    "Name": "Ninja Art of Beast Mimicry: All-Fours Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-029",
+    "Name": "Demon Wind Shuriken Windmill of Shadows",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-030",
+    "Name": "Lightning Blade",
+    "Rarity": "Super Rare"
+  },
+  {
+    "Number": "PTHJ-031",
+    "Name": "Guillotine Sword",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-032",
+    "Name": "Water Prison Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-033",
+    "Name": "Water Style: Water Dragon Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-034",
+    "Name": "Water Style: Giant Vortex Jutsu",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHJ-035",
+    "Name": "A Thousand Needles of Death",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHJ-036",
+    "Name": "Crystal Ice Mirror",
+    "Rarity": "Super Rare"
+  },
+  {
+    "Number": "PTHJ-037",
+    "Name": "Shadow Shuriken Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-038",
+    "Name": "Sprinting in the Mist Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-039",
+    "Name": "Parasitic Insect Jutsu",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHJ-040",
+    "Name": "Tree Climbing Training",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-041",
+    "Name": "Summoning Earth Style: Fanged Pursuit Jutsu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHJ-042",
+    "Name": "Byakugan",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHM-001",
+    "Name": "Ichiraku Noodle Shop",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-002",
+    "Name": "An Outcast's Dream",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-003",
+    "Name": "Leaf Headband",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-004",
+    "Name": "A Kind Teacher Mission",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-005",
+    "Name": "Disaster of the Nine-Tailed Fox Spirit",
+    "Rarity": "Super Rare"
+  },
+  {
+    "Number": "PTHM-006",
+    "Name": "Mission of Capturing the Missing Pet \"Tora\"",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-007",
+    "Name": "Make Out Paradise",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-008",
+    "Name": "An Accident",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-009",
+    "Name": "Lone Avenger",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-010",
+    "Name": "Exhaustion of Stamina",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-011",
+    "Name": "Bingo Book",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-012",
+    "Name": "The Worst Client",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-013",
+    "Name": "Gato Transport",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-014",
+    "Name": "Intent to Kill",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHM-015",
+    "Name": "Inner Sakura",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHM-016",
+    "Name": "Browsing in a Bookstore",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-017",
+    "Name": "Three Man Squads",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-018",
+    "Name": "One Morning",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHM-019",
+    "Name": "Failure",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-020",
+    "Name": "Ninja Academy",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-021",
+    "Name": "After the Battle",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHM-022",
+    "Name": "Leaf Ninja Forces",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-023",
+    "Name": "Battle of Clones",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-024",
+    "Name": "Oath of Pain",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-025",
+    "Name": "The Hero Appears!",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHM-026",
+    "Name": "The Most Unpredictable Ninja",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-027",
+    "Name": "Blood of the Uchiha Clan",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-028",
+    "Name": "Coward Mission",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-029",
+    "Name": "Seesaw Battle",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-030",
+    "Name": "Kakashi's Foresight",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHM-031",
+    "Name": "Gathering Herbs",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHM-032",
+    "Name": "The Worst for Last",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHM-033",
+    "Name": "Public Execution",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-034",
+    "Name": "Unwanted Child",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-035",
+    "Name": "Look for the Red Four-Leaf Clover",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-036",
+    "Name": "Left Behind",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-037",
+    "Name": "Specific Instruction",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-038",
+    "Name": "Teachings of the Previous Hokage",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-039",
+    "Name": "Small Act of Courage",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-040",
+    "Name": "Shooting Star",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-041",
+    "Name": "Manji Battle Formation",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHM-042",
+    "Name": "Revival",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-001",
+    "Name": "Naruto Uzumaki",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-002",
+    "Name": "Sasuke Uchiha",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-003",
+    "Name": "Sakura Haruno",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-004",
+    "Name": "Ino Yamanaka",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-005",
+    "Name": "Shikamaru Nara",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-006",
+    "Name": "Choji Akimichi",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-007",
+    "Name": "Konohamaru",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-008",
+    "Name": "Iruka Umino",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHN-009",
+    "Name": "Mizuki",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-010",
+    "Name": "Ebisu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-011",
+    "Name": "Kakashi Hatake",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-012",
+    "Name": "Asuma Sarutobi",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-013",
+    "Name": "The Third Hokage",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-014",
+    "Name": "The Demon Brothers Gouzu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-015",
+    "Name": "The Demon Brothers Meizu",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-016",
+    "Name": "Haku",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-017",
+    "Name": "Haku",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-018",
+    "Name": "Zabuza Momochi",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-019",
+    "Name": "Naruto Uzumaki",
+    "Rarity": "Super Rare"
+  },
+  {
+    "Number": "PTHN-020",
+    "Name": "Sasuke Uchiha",
+    "Rarity": "Super Rare"
+  },
+  {
+    "Number": "PTHN-021",
+    "Name": "Sakura Haruno",
+    "Rarity": "Super Rare"
+  },
+  {
+    "Number": "PTHN-022",
+    "Name": "Iruka Umino",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHN-023",
+    "Name": "Kakashi Hatake",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHN-024",
+    "Name": "Zabuza Momochi",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-025",
+    "Name": "Naruto Uzumaki",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-026",
+    "Name": "Sasuke Uchiha",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-027",
+    "Name": "Sakura Haruno",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-028",
+    "Name": "Kiba Inuzuka",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-029",
+    "Name": "Shino Aburame",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-030",
+    "Name": "Hinata Hyuga",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-031",
+    "Name": "Rock Lee",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-032",
+    "Name": "Tenten",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-033",
+    "Name": "Neji Hyuga",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-034",
+    "Name": "Konohamaru",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-035",
+    "Name": "Kaede Ureshino",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-036",
+    "Name": "Akamaru",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-037",
+    "Name": "Kakashi Hatake",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-038",
+    "Name": "Kurenai Yuhi",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-039",
+    "Name": "Might Guy",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-040",
+    "Name": "Zabuza Momochi",
+    "Rarity": "Uncommon"
+  },
+  {
+    "Number": "PTHN-041",
+    "Name": "Rock Lee",
+    "Rarity": "Rare"
+  },
+  {
+    "Number": "PTHN-042",
+    "Name": "Neji Hyuga",
+    "Rarity": "Common"
+  },
+  {
+    "Number": "PTHN-043",
+    "Name": "Haku",
+    "Rarity": "Super Rare"
+  }
+];
+    let pool = embeddedCards.slice();
     let byRarity = {Common:[],Uncommon:[],Rare:[],SuperRare:[]};
     let session = {packs:[],opened:0};
 
@@ -118,17 +733,11 @@
     function bucketPool() {
       byRarity = {Common:[],Uncommon:[],Rare:[],SuperRare:[]};
       pool.forEach(c => {
-        const r = (c.Rarity||c.rarity||'Common').trim();
+        const r = (c.Rarity||'Common').trim();
         if (/super/i.test(r)) byRarity.SuperRare.push(c);
-        else if (/rare/i.test(r) && /super/i.test(r)===false) byRarity.Rare.push(c);
-        else if (/uncommon/i.test(r) || /uc/i.test(r) ) byRarity.Uncommon.push(c);
-        else if (/common/i.test(r) || r==='Common') byRarity.Common.push(c);
-        else {
-          if (r.toLowerCase().includes('super')) byRarity.SuperRare.push(c);
-          else if (r.toLowerCase().includes('rare')) byRarity.Rare.push(c);
-          else if (r.toLowerCase().includes('un')) byRarity.Uncommon.push(c);
-          else byRarity.Common.push(c);
-        }
+        else if (/rare/i.test(r) && !/super/i.test(r)) byRarity.Rare.push(c);
+        else if (/uncommon/i.test(r)) byRarity.Uncommon.push(c);
+        else byRarity.Common.push(c);
       });
     }
 
@@ -136,63 +745,37 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         const data = e.target.result;
-        let workbook;
-        try {
-          workbook = XLSX.read(data, {type:'binary'});
-        } catch(err) {
-          const arr = new Uint8Array(e.target.result);
-          workbook = XLSX.read(arr, {type:'array'});
-        }
+        let workbook = XLSX.read(data, {type:'binary'});
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(firstSheet, {defval:''});
-        pool = json.map(r => ({
-          Name: r.Name || r.name || r.Card || r.card || r['Card Name'] || 'Unknown',
-          Rarity: r.Rarity || r.rarity || r.RARE || 'Common',
-          Number: r.Number || r.number || r['Card Number'] || ''  // read card number
-        }));
+        pool = json.map(r => ({Name:r.Name||'Unknown', Rarity:r.Rarity||'Common', Number:r.Number||''}));
         bucketPool();
-        alert('Loaded ' + pool.length + ' cards. Rarity buckets: Common=' + byRarity.Common.length + ', Uncommon=' + byRarity.Uncommon.length + ', Rare=' + byRarity.Rare.length + ', SuperRare=' + byRarity.SuperRare.length);
+        alert('Loaded ' + pool.length + ' cards from uploaded file.');
       };
       reader.readAsBinaryString(file);
     }
 
-    fileInput.addEventListener('change', (e)=>{
-      const f = e.target.files[0];
-      if (!f) return;
-      readFile(f);
-    });
+    fileInput.addEventListener('change', (e)=>{ if(e.target.files[0]) readFile(e.target.files[0]); });
 
-    function sampleFrom(array, count, noReplace=true) {
-      if (!array || array.length===0) return [];
-      const out = [];
-      if (noReplace && array.length >= count) {
-        const copy = array.slice();
-        for (let i=0;i<count;i++) {
-          const idx = Math.floor(Math.random()*copy.length);
-          out.push(copy.splice(idx,1)[0]);
-        }
-      } else {
-        for (let i=0;i<count;i++) out.push(array[Math.floor(Math.random()*array.length)]);
-      }
-      return out;
+    function sampleFrom(arr, n) {
+      if (!arr || arr.length === 0) return [];
+      return arr.sort(()=>0.5-Math.random()).slice(0,n);
     }
 
     function pickBonus() {
-      const roll = Math.floor(Math.random()*12) + 1;
-      if (roll === 1 && byRarity.SuperRare.length>0) return sampleFrom(byRarity.SuperRare,1)[0];
+      if (Math.random() < 1/12 && byRarity.SuperRare.length>0) return sampleFrom(byRarity.SuperRare,1)[0];
       return pool[Math.floor(Math.random()*pool.length)];
     }
 
     function openPack() {
-      const commons = sampleFrom(byRarity.Common,6,true);
-      const uncommons = sampleFrom(byRarity.Uncommon,2,true);
-      const rare = sampleFrom(byRarity.Rare,1,true);
+      const commons = sampleFrom(byRarity.Common,6);
+      const uncommons = sampleFrom(byRarity.Uncommon,2);
+      const rares = sampleFrom(byRarity.Rare,1);
       const bonus = pickBonus();
-      const pack = [].concat(commons, uncommons, rare, bonus);
-      const normalized = pack.map(c=>({Name:c.Name, Rarity:c.Rarity || c.rarity || 'Common', Number:c.Number || ''}));
-      session.packs.push(normalized);
+      const pack = [].concat(commons, uncommons, rares, bonus);
+      session.packs.push(pack);
       session.opened += 1;
-      renderPack(normalized, session.opened);
+      renderPack(pack, session.opened);
       renderHistory();
     }
 
@@ -200,18 +783,12 @@
       currentCardsEl.innerHTML = '';
       pack.forEach((c,i)=>{
         const div = document.createElement('div'); div.className='card';
-        const name = document.createElement('div'); 
-        name.className='name'; 
-        name.textContent = (i+1) + '. ' + (c.Number ? '['+c.Number+'] ' : '') + c.Name;
-        const badge = document.createElement('div'); 
-        badge.className='badge ' + getClassForRarity(c.Rarity); 
-        badge.textContent = c.Rarity;
-        div.appendChild(name); 
-        div.appendChild(badge);
-        currentCardsEl.appendChild(div);
+        const name = document.createElement('div'); name.className='name'; name.textContent = (i+1)+'. '+(c.Number?'['+c.Number+'] ':'')+c.Name;
+        const badge = document.createElement('div'); badge.className='badge '+getClassForRarity(c.Rarity); badge.textContent=c.Rarity;
+        div.appendChild(name); div.appendChild(badge); currentCardsEl.appendChild(div);
       });
       lastPackIndex.textContent = index;
-      lastPackDisplay.innerHTML = pack.map(c=>`<span class="small-badge">${escapeHtml(c.Number ? '['+c.Number+'] ' : '')}${escapeHtml(c.Name)} <strong>(${escapeHtml(c.Rarity)})</strong></span>`).join(' ');
+      lastPackDisplay.innerHTML = pack.map(c=>`<span class='small-badge'>${c.Number?'['+c.Number+'] ':''}${c.Name} <strong>(${c.Rarity})</strong></span>`).join(' ');
     }
 
     function renderHistory() {
@@ -223,7 +800,7 @@
         const list = document.createElement('div'); list.className='list';
         p.forEach(c=>{
           const s = document.createElement('span'); s.className='small-badge';
-          s.innerHTML = `<span class="badge ${getClassForRarity(c.Rarity)}" style="margin-right:8px">${c.Rarity}</span> ${escapeHtml(c.Number ? '['+c.Number+'] ' : '')}${escapeHtml(c.Name)}`;
+          s.innerHTML = `<span class='badge ${getClassForRarity(c.Rarity)}'>${c.Rarity}</span> ${c.Number?'['+c.Number+'] ':''}${c.Name}`;
           list.appendChild(s);
         });
         div.appendChild(list);
@@ -232,14 +809,11 @@
     }
 
     function getClassForRarity(r){
-      if (!r) return 'common';
       if (/super/i.test(r)) return 'super';
-      if (/rare/i.test(r)) return 'rare';
+      if (/rare/i.test(r) && !/super/i.test(r)) return 'rare';
       if (/uncommon/i.test(r)) return 'uncommon';
       return 'common';
     }
-
-    function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
     startBtn.addEventListener('click', ()=>{
       bucketPool();
@@ -249,22 +823,14 @@
       startBtn.style.display='none';
       openBtn.style.display='inline-block';
       resetBtn.style.display='inline-block';
-      alert('Pack opening session started. Click "Open Pack" to open a pack.');
+      alert('Pack opening session started! Click "Open Pack" to begin.');
     });
 
-    openBtn.addEventListener('click', ()=>{
-      openPack();
-      openBtn.textContent = 'Open Another Pack';
-    });
-
-    resetBtn.addEventListener('click', ()=>{
-      if (!confirm('Start a new pack opening session? This will clear your opened packs history.')) return;
-      session = {packs:[],opened:0};
-      historyList.innerHTML=''; currentCardsEl.innerHTML=''; lastPackIndex.textContent='0'; lastPackDisplay.innerHTML='';
-      startBtn.style.display='inline-block'; openBtn.style.display='none'; resetBtn.style.display='none';
-    });
+    openBtn.addEventListener('click', ()=>{ openPack(); openBtn.textContent = 'Open Another Pack'; });
+    resetBtn.addEventListener('click', ()=>{ location.reload(); });
 
     bucketPool();
   </script>
 </body>
 </html>
+
