@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Path to Hokage — Mock Pack Opener</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#f59e0b;--muted:#94a3b8;--good:#10b981;--danger:#ef4444}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;background:linear-gradient(180deg,#071025 0%,#081122 100%);color:#e6eef8}
+    .wrap{max-width:1100px;margin:24px auto;padding:18px}
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0;font-size:1.4rem}
+    .controls{margin-top:18px;display:flex;gap:12px;align-items:center}
+    .bigbtn{background:linear-gradient(90deg,var(--accent),#ffb86b);border:none;padding:14px 22px;border-radius:12px;font-weight:700;font-size:1.05rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,.08);padding:10px 14px;border-radius:10px;color:var(--muted);cursor:pointer}
+    .uploader{margin-left:auto}
+
+    .pack-view{margin-top:22px;display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card-grid{background:var(--card);padding:16px;border-radius:12px;min-height:220px}
+    .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .card{background:linear-gradient(180deg,#0b1320,#081024);border-radius:8px;padding:10px;min-height:82px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(255,255,255,.03)}
+    .card .name{font-weight:600;font-size:0.88rem}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;font-size:0.72rem}
+    .common{background:rgba(255,255,255,.06);color:#dbeafe}
+    .uncommon{background:rgba(34,197,94,.12);color:var(--good);}
+    .rare{background:rgba(59,130,246,.12);color:#3b82f6}
+    .super{background:linear-gradient(90deg,#a78bfa,#f472b6);color:#fff}
+
+    .pack-history{background:rgba(11,17,28,.55);padding:12px;border-radius:10px;max-height:520px;overflow:auto}
+    .pack-item{border-bottom:1px dashed rgba(255,255,255,.03);padding:8px 0}
+    .pack-item h4{margin:0;font-size:0.95rem}
+    .pack-item .list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+    .small-badge{padding:3px 8px;border-radius:999px;font-size:0.75rem;background:rgba(255,255,255,.03)}
+
+    footer{margin-top:18px;color:var(--muted);font-size:0.9rem}
+    .note{margin-top:8px;color:var(--muted);font-size:0.85rem}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Path to Hokage — Mock Pack Opener</h1>
+      <div class="note">Drop your filled CSV/XLSX (columns: <code>Name</code>, <code>Rarity</code>, <code>Number</code>) to use your collection. If none uploaded, app uses a sample subset.</div>
+    </header>
+
+    <div class="controls">
+      <input id="fileInput" type="file" accept=".csv,.xls,.xlsx" class="uploader" />
+      <button id="startBtn" class="bigbtn">Start Opening Packs</button>
+      <button id="openBtn" class="bigbtn" style="display:none">Open Pack</button>
+      <button id="resetBtn" class="secondary" style="display:none">Start New Pack Opening Session</button>
+    </div>
+
+    <div class="pack-view">
+      <div>
+        <div class="pack-view-controls">
+          <div style="margin-top:12px;color:var(--muted)">Current pack contents</div>
+          <div class="card-grid">
+            <div class="cards" id="currentCards">
+              <!-- cards will render here -->
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <strong>Last opened pack (#<span id="lastPackIndex">0</span>):</strong>
+          <div id="lastPackDisplay" style="margin-top:8px"></div>
+        </div>
+
+      </div>
+
+      <aside>
+        <div class="pack-history">
+          <h3 style="margin-top:0;margin-bottom:8px">Opened packs</h3>
+          <div id="historyList"></div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      Tip: The pack composition is <strong>6 Commons, 2 Uncommons, 1 Rare, 1 Bonus (random; 1/12 chance Super Rare)</strong>.
+    </footer>
+  </div>
+
+  <!-- SheetJS for reading user Excel/CSV (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script>
+    const samplePool = [
+      {Name:'Naruto Uzumaki',Rarity:'Common',Number:'001'},
+      {Name:'Sasuke Uchiha',Rarity:'Uncommon',Number:'002'},
+      {Name:'Sakura Haruno',Rarity:'Uncommon',Number:'003'},
+      {Name:'Kunai',Rarity:'Common',Number:'004'},
+      {Name:'Cross-Shaped Shuriken',Rarity:'Common',Number:'005'},
+      {Name:'Multi Shadow Clone Jutsu',Rarity:'Rare',Number:'006'},
+      {Name:'Sharingan Eye',Rarity:'Rare',Number:'007'},
+      {Name:'Byakugan',Rarity:'Rare',Number:'008'},
+      {Name:'One Morning',Rarity:'Rare',Number:'009'},
+      {Name:'Harem Jutsu',Rarity:'Uncommon',Number:'010'},
+      {Name:'Crystal Ice Mirror',Rarity:'Rare',Number:'011'},
+      {Name:'Leaf Headband',Rarity:'Common',Number:'012'},
+      {Name:'Kakashi Hatake',Rarity:'Uncommon',Number:'013'},
+      {Name:'Iruka Umino',Rarity:'Rare',Number:'014'},
+      {Name:'A Thousand Needles of Death',Rarity:'Uncommon',Number:'015'},
+    ];
+
+    let pool = samplePool.slice();
+    let byRarity = {Common:[],Uncommon:[],Rare:[],SuperRare:[]};
+    let session = {packs:[],opened:0};
+
+    const fileInput = document.getElementById('fileInput');
+    const startBtn = document.getElementById('startBtn');
+    const openBtn = document.getElementById('openBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const currentCardsEl = document.getElementById('currentCards');
+    const historyList = document.getElementById('historyList');
+    const lastPackIndex = document.getElementById('lastPackIndex');
+    const lastPackDisplay = document.getElementById('lastPackDisplay');
+
+    function bucketPool() {
+      byRarity = {Common:[],Uncommon:[],Rare:[],SuperRare:[]};
+      pool.forEach(c => {
+        const r = (c.Rarity||c.rarity||'Common').trim();
+        if (/super/i.test(r)) byRarity.SuperRare.push(c);
+        else if (/rare/i.test(r) && /super/i.test(r)===false) byRarity.Rare.push(c);
+        else if (/uncommon/i.test(r) || /uc/i.test(r) ) byRarity.Uncommon.push(c);
+        else if (/common/i.test(r) || r==='Common') byRarity.Common.push(c);
+        else {
+          if (r.toLowerCase().includes('super')) byRarity.SuperRare.push(c);
+          else if (r.toLowerCase().includes('rare')) byRarity.Rare.push(c);
+          else if (r.toLowerCase().includes('un')) byRarity.Uncommon.push(c);
+          else byRarity.Common.push(c);
+        }
+      });
+    }
+
+    function readFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = e.target.result;
+        let workbook;
+        try {
+          workbook = XLSX.read(data, {type:'binary'});
+        } catch(err) {
+          const arr = new Uint8Array(e.target.result);
+          workbook = XLSX.read(arr, {type:'array'});
+        }
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(firstSheet, {defval:''});
+        pool = json.map(r => ({
+          Name: r.Name || r.name || r.Card || r.card || r['Card Name'] || 'Unknown',
+          Rarity: r.Rarity || r.rarity || r.RARE || 'Common',
+          Number: r.Number || r.number || r['Card Number'] || ''  // read card number
+        }));
+        bucketPool();
+        alert('Loaded ' + pool.length + ' cards. Rarity buckets: Common=' + byRarity.Common.length + ', Uncommon=' + byRarity.Uncommon.length + ', Rare=' + byRarity.Rare.length + ', SuperRare=' + byRarity.SuperRare.length);
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    fileInput.addEventListener('change', (e)=>{
+      const f = e.target.files[0];
+      if (!f) return;
+      readFile(f);
+    });
+
+    function sampleFrom(array, count, noReplace=true) {
+      if (!array || array.length===0) return [];
+      const out = [];
+      if (noReplace && array.length >= count) {
+        const copy = array.slice();
+        for (let i=0;i<count;i++) {
+          const idx = Math.floor(Math.random()*copy.length);
+          out.push(copy.splice(idx,1)[0]);
+        }
+      } else {
+        for (let i=0;i<count;i++) out.push(array[Math.floor(Math.random()*array.length)]);
+      }
+      return out;
+    }
+
+    function pickBonus() {
+      const roll = Math.floor(Math.random()*12) + 1;
+      if (roll === 1 && byRarity.SuperRare.length>0) return sampleFrom(byRarity.SuperRare,1)[0];
+      return pool[Math.floor(Math.random()*pool.length)];
+    }
+
+    function openPack() {
+      const commons = sampleFrom(byRarity.Common,6,true);
+      const uncommons = sampleFrom(byRarity.Uncommon,2,true);
+      const rare = sampleFrom(byRarity.Rare,1,true);
+      const bonus = pickBonus();
+      const pack = [].concat(commons, uncommons, rare, bonus);
+      const normalized = pack.map(c=>({Name:c.Name, Rarity:c.Rarity || c.rarity || 'Common', Number:c.Number || ''}));
+      session.packs.push(normalized);
+      session.opened += 1;
+      renderPack(normalized, session.opened);
+      renderHistory();
+    }
+
+    function renderPack(pack, index) {
+      currentCardsEl.innerHTML = '';
+      pack.forEach((c,i)=>{
+        const div = document.createElement('div'); div.className='card';
+        const name = document.createElement('div'); 
+        name.className='name'; 
+        name.textContent = (i+1) + '. ' + (c.Number ? '['+c.Number+'] ' : '') + c.Name;
+        const badge = document.createElement('div'); 
+        badge.className='badge ' + getClassForRarity(c.Rarity); 
+        badge.textContent = c.Rarity;
+        div.appendChild(name); 
+        div.appendChild(badge);
+        currentCardsEl.appendChild(div);
+      });
+      lastPackIndex.textContent = index;
+      lastPackDisplay.innerHTML = pack.map(c=>`<span class="small-badge">${escapeHtml(c.Number ? '['+c.Number+'] ' : '')}${escapeHtml(c.Name)} <strong>(${escapeHtml(c.Rarity)})</strong></span>`).join(' ');
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = '';
+      session.packs.slice().reverse().forEach((p,idx)=>{
+        const realIndex = session.opened - idx;
+        const div = document.createElement('div'); div.className='pack-item';
+        const h = document.createElement('h4'); h.textContent = 'Pack #' + realIndex; div.appendChild(h);
+        const list = document.createElement('div'); list.className='list';
+        p.forEach(c=>{
+          const s = document.createElement('span'); s.className='small-badge';
+          s.innerHTML = `<span class="badge ${getClassForRarity(c.Rarity)}" style="margin-right:8px">${c.Rarity}</span> ${escapeHtml(c.Number ? '['+c.Number+'] ' : '')}${escapeHtml(c.Name)}`;
+          list.appendChild(s);
+        });
+        div.appendChild(list);
+        historyList.appendChild(div);
+      });
+    }
+
+    function getClassForRarity(r){
+      if (!r) return 'common';
+      if (/super/i.test(r)) return 'super';
+      if (/rare/i.test(r)) return 'rare';
+      if (/uncommon/i.test(r)) return 'uncommon';
+      return 'common';
+    }
+
+    function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    startBtn.addEventListener('click', ()=>{
+      bucketPool();
+      session = {packs:[],opened:0};
+      historyList.innerHTML = '';
+      currentCardsEl.innerHTML = '';
+      startBtn.style.display='none';
+      openBtn.style.display='inline-block';
+      resetBtn.style.display='inline-block';
+      alert('Pack opening session started. Click "Open Pack" to open a pack.');
+    });
+
+    openBtn.addEventListener('click', ()=>{
+      openPack();
+      openBtn.textContent = 'Open Another Pack';
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      if (!confirm('Start a new pack opening session? This will clear your opened packs history.')) return;
+      session = {packs:[],opened:0};
+      historyList.innerHTML=''; currentCardsEl.innerHTML=''; lastPackIndex.textContent='0'; lastPackDisplay.innerHTML='';
+      startBtn.style.display='inline-block'; openBtn.style.display='none'; resetBtn.style.display='none';
+    });
+
+    bucketPool();
+  </script>
+</body>
+</html>
